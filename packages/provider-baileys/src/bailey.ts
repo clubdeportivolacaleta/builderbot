@@ -301,7 +301,7 @@ class BaileysProvider extends ProviderClass<WASocket> {
     protected initVendor = async () => {
         const NAME_DIR_SESSION = `${this.globalVendorArgs.name}_sessions`
         const { state, saveCreds } = await useMultiFileAuthState(NAME_DIR_SESSION)
-        const loggerBaileys = pino({ level: 'fatal' })
+        const loggerBaileys = pino({ level: 'info' })
 
         this.saveCredsGlobal = saveCreds
 
@@ -400,7 +400,10 @@ class BaileysProvider extends ProviderClass<WASocket> {
                     this.logger.log(
                         `[${new Date().toISOString()}] Connection closed. Status: ${statusCode}, Reason: ${reason}`
                     )
-
+console.log('⚡⚡ ERROR AUTH DETALLADO ⚡⚡')
+                    console.log('statusCode:', statusCode)
+                    console.log('reason:', reason)
+                    console.log('lastDisconnect completo:', JSON.stringify(lastDisconnect, null, 2))
                     // Casos donde NO debemos reconectar
                     if (statusCode === DisconnectReason.loggedOut) {
                         this.logger.log(`[${new Date().toISOString()}] Logged out, clearing session and restarting...`)
