@@ -75,7 +75,8 @@
     "packages/provider-voice-sip",
     "packages/provider-voice-whatsapp",
     "packages/contexts-dialogflow",
- "starters/apps/*"],
+ "starters/apps/*"
+  ],
   "devDependencies": {
     "@commitlint/config-conventional": "^20.2.0",
     "@eslint/js": "^9.39.1",
