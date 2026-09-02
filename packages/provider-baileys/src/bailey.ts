@@ -393,17 +393,27 @@ class BaileysProvider extends ProviderClass<WASocket> {
                 this.logger.log(`[${new Date().toISOString()}] Connection update: ${connection}`)
 
                 const statusCode = (lastDisconnect?.error as Boom)?.output?.statusCode
-                const reason = lastDisconnect?.error?.message
+    const rawError = lastDisconnect?.error
+    const reason = rawError?.message || rawError?.toString() || JSON.stringify(rawError)
 
-                /** Connection closed for various reasons */
-                if (connection === 'close') {
-                    this.logger.log(
-                        `[${new Date().toISOString()}] Connection closed. Status: ${statusCode}, Reason: ${reason}`
-                    )
-console.log('⚡⚡ ERROR AUTH DETALLADO ⚡⚡')
-                    console.log('statusCode:', statusCode)
-                    console.log('reason:', reason)
-                    console.log('lastDisconnect completo:', JSON.stringify(lastDisconnect, null, 2))
+    /** Connection closed for various reasons */
+    if (connection === 'close') {
+        this.logger.log(
+            `[${new Date().toISOString()}] Connection closed. Status: ${statusCode}, Reason: ${reason}`
+        )
+
+        console.log('⚡⚡ ERROR AUTH DETALLADO ⚡⚡')
+        console.log('statusCode:', statusCode)
+        console.log('reason:', reason)
+        console.log('error completo:', rawError)
+        console.log(
+            'error propiedades:',
+            rawError ? Object.getOwnPropertyNames(rawError) : 'rawError es undefined'
+        )
+        console.log(
+            'lastDisconnect completo:',
+            JSON.stringify(lastDisconnect, null, 2)
+        )
                     // Casos donde NO debemos reconectar
                     if (statusCode === DisconnectReason.loggedOut) {
                         this.logger.log(`[${new Date().toISOString()}] Logged out, clearing session and restarting...`)
