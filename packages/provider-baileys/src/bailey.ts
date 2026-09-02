@@ -378,12 +378,14 @@ class BaileysProvider extends ProviderClass<WASocket> {
                         payload: { code },
                     })
                 } else {
-                    this.emit('auth_failure', [
-                        `The phone number has not been defined, please add it`,
-                        `Restart the BOT`,
-                        `You can also check a log that has been created baileys.log`,
-                        `Need help: https://link.codigoencasa.com/DISCORD`,
-                    ])
+                   this.emit('auth_failure', {
+            instructions: [
+                `The phone number has not been defined, please add it`,
+                `Restart the BOT`,
+                `You can also check a log that has been created baileys.log`,
+                `Need help: https://link.codigoencasa.com/DISCORD`,
+            ],
+        })
                 }
             }
 
@@ -432,12 +434,14 @@ class BaileysProvider extends ProviderClass<WASocket> {
 
                     // Casos críticos - emitir error
                     this.logger.log(`[${new Date().toISOString()}] Critical error, stopping reconnection attempts`)
-                    this.emit('auth_failure', [
-                        `Critical connection error: ${reason}`,
-                        `Status code: ${statusCode}`,
-                        `Check baileys.log for details`,
-                        `Need help: https://link.codigoencasa.com/DISCORD`,
-                    ])
+                   this.emit('auth_failure', {
+            instructions: [
+                `Critical connection error: ${reason}`,
+                `Status code: ${statusCode}`,
+                `Check baileys.log for details`,
+                `Need help: https://link.codigoencasa.com/DISCORD`,
+            ],
+        })
                 }
 
                 /** Connection opened successfully */
@@ -477,13 +481,14 @@ class BaileysProvider extends ProviderClass<WASocket> {
             return sock.ev
         } catch (e) {
             this.logger.log(e)
-            this.emit('auth_failure', [
+            this.emit('auth_failure', {
+            instructions: [
                 `Something unexpected has occurred, do not panic`,
                 `Restart the BOT`,
                 `You can also check a log that has been created baileys.log`,
                 `Need help: https://link.codigoencasa.com/DISCORD`,
-            ])
-        }
+            ],
+        })
     }
 
     /**
@@ -1213,13 +1218,14 @@ class BaileysProvider extends ProviderClass<WASocket> {
             this.logger.log(
                 `[${new Date().toISOString()}] Max reconnection attempts reached (${this.maxReconnectAttempts})`
             )
-            this.emit('auth_failure', [
+            this.emit('auth_failure', {
+            instructions: [
                 `Maximum reconnection attempts reached`,
                 `Please check your internet connection`,
                 `Check baileys.log for details`,
                 `Need help: https://link.codigoencasa.com/DISCORD`,
-            ])
-            return
+            ],
+        })
         }
 
         this.reconnectAttempts++
