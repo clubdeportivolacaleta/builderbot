@@ -1255,5 +1255,6 @@ class BaileysProvider extends ProviderClass<WASocket> {
         }, delay)
     }
 }
+    }
 
 export { BaileysProvider }
