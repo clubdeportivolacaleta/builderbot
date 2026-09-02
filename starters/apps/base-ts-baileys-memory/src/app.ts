@@ -64,9 +64,7 @@ const main = async () => {
     // If you experience ERRO AUTH issues, check the latest WhatsApp version at:
     // https://wppconnect.io/whatsapp-versions/
     // Example: version "2.3000.1035824857-alpha" -> [2, 3000, 1035824857]
-    const adapterProvider = createProvider(Provider, 
-		{ version: [2, 3000, 1035824857] } 
-	)
+   const adapterProvider = createProvider(Provider)
     const adapterDB = new Database()
 
     const { handleCtx, httpServer } = await createBot({
