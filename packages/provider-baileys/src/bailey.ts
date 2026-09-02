@@ -482,17 +482,17 @@ class BaileysProvider extends ProviderClass<WASocket> {
         } catch (e) {
             this.logger.log(e)
             this.emit('auth_failure', {
-            instructions: [
-                `Something unexpected has occurred, do not panic`,
-                `Restart the BOT`,
-                `You can also check a log that has been created baileys.log`,
-                `Need help: https://link.codigoencasa.com/DISCORD`,
-            ],
-        })
-    }
+                instructions: [
+                    `Something unexpected has occurred, do not panic`,
+                    `Restart the BOT`,
+                    `You can also check a log that has been created baileys.log`,
+                    `Need help: https://link.codigoencasa.com/DISCORD`,
+                ],
+            })
         }
+    }
 
-    /**
+   /**
      * Map native events that the Provider class expects
      * to have a standard set of events
      * @returns
@@ -1254,8 +1254,6 @@ class BaileysProvider extends ProviderClass<WASocket> {
                 this.logger.log(`[${new Date().toISOString()}] Reconnection failed:`, error)
             }
         }, delay)
-    }
-}
     }
 
 export { BaileysProvider }
