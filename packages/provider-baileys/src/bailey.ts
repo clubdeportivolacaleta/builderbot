@@ -490,6 +490,7 @@ class BaileysProvider extends ProviderClass<WASocket> {
             ],
         })
     }
+        }
 
     /**
      * Map native events that the Provider class expects
