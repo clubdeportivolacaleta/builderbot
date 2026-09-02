@@ -71,7 +71,7 @@ const main = async () => {
 
     const { handleCtx, httpServer } = await createBot({
         flow: adapterFlow,
-        provider: adapterProvider,
+       provider: adapterProvider as any,
         database: adapterDB,
     })
 
