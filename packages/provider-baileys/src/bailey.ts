@@ -1225,10 +1225,11 @@ class BaileysProvider extends ProviderClass<WASocket> {
                 `Please check your internet connection`,
                 `Check baileys.log for details`,
                 `Need help: https://link.codigoencasa.com/DISCORD`,
-            ],
-        })
-        }
-
+         })   
+                return
+    }
+  
+}
         this.reconnectAttempts++
         const delay = Math.min(this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1), 30000) // Max 30 segundos
 
