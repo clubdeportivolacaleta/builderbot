@@ -1215,22 +1215,23 @@ class BaileysProvider extends ProviderClass<WASocket> {
     }
 
     private async delayedReconnect(): Promise<void> {
-        if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-            this.logger.log(
-                `[${new Date().toISOString()}] Max reconnection attempts reached (${this.maxReconnectAttempts})`
-            )
-            this.emit('auth_failure', {
+    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+        this.logger.log(
+            `[${new Date().toISOString()}] Max reconnection attempts reached (${this.maxReconnectAttempts})`
+        )
+
+        this.emit('auth_failure', {
             instructions: [
                 `Maximum reconnection attempts reached`,
                 `Please check your internet connection`,
                 `Check baileys.log for details`,
                 `Need help: https://link.codigoencasa.com/DISCORD`,
-         })   
-                return
+            ],
+        })
+        return
     }
-  
-}
-        this.reconnectAttempts++
+
+    this.reconnectAttempts++
         const delay = Math.min(this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1), 30000) // Max 30 segundos
 
         this.logger.log(
