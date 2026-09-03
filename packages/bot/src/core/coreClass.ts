@@ -1,4 +1,3 @@
-```ts
 import { Console } from 'console'
 import { createWriteStream } from 'fs'
 
