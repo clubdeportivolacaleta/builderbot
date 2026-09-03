@@ -61,9 +61,11 @@ const fullSamplesFlow = addKeyword<Provider, Database>(['samples', utils.setEven
 const main = async () => {
     const adapterFlow = createFlow([welcomeFlow, registerFlow, fullSamplesFlow])
     
-    // AQUÍ: Pasamos el puerto dinámico de Render al proveedor
+ // AQUÍ: Pasamos el puerto y activamos el emparejamiento por código seguro
     const adapterProvider = createProvider(Provider, {
         port: Number(PORT),
+        usePairingCode: true,
+        phoneNumber: process.env.PHONE_NUMBER,
     })
     
     const adapterDB = new Database()
