@@ -1,3 +1,4 @@
+```ts
 import { Console } from 'console'
 import { createWriteStream } from 'fs'
 
@@ -124,6 +125,8 @@ class CoreClass<P extends ProviderClass = any, D extends MemoryDB = any> extends
         {
             event: 'auth_failure',
             func: (data) => {
+                console.log('🚨🚨 ENTRE AL LISTENER AUTH_FAILURE 🚨🚨')
+
                 console.log('🔥🔥 AUTH_FAILURE RAW 🔥🔥')
                 console.log('data:', data)
                 console.log('data JSON:', JSON.stringify(data, null, 2))
@@ -853,3 +856,4 @@ class CoreClass<P extends ProviderClass = any, D extends MemoryDB = any> extends
 }
 
 export { CoreClass }
+```
