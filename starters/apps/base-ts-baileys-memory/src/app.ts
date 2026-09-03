@@ -71,7 +71,6 @@ const main = async () => {
         port: PORT,
         usePairingCode: true,
         phoneNumber: '5492235495907',
-        browser: ['Ubuntu', 'Chrome', '20.04.04'],
     })
 
     const adapterDB = new Database()
