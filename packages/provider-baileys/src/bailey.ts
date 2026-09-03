@@ -1228,8 +1228,6 @@ class BaileysProvider extends ProviderClass<WASocket> {
                     `Need help: https://link.codigoencasa.com/DISCORD`,
                 ],
             })
-
-            return
         }
 
         this.reconnectAttempts++
