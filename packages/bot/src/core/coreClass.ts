@@ -855,4 +855,3 @@ class CoreClass<P extends ProviderClass = any, D extends MemoryDB = any> extends
 }
 
 export { CoreClass }
-```
