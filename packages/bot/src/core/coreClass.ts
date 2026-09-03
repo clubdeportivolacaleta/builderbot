@@ -119,10 +119,26 @@ class CoreClass<P extends ProviderClass = any, D extends MemoryDB = any> extends
             func: () =>
                 printer(['Tell a contact on your WhatsApp to write "hello"...'], '✅ Connected Provider', 'bgCyan'),
         },
+
+        // 🔎 DIAGNÓSTICO DEL AUTH_FAILURE
         {
             event: 'auth_failure',
-            func: ({ instructions }) => printer(instructions, '⚡⚡ ERROR AUTH ⚡⚡'),
+            func: (data) => {
+                console.log('🔥🔥 AUTH_FAILURE RAW 🔥🔥')
+                console.log('data:', data)
+                console.log('data JSON:', JSON.stringify(data, null, 2))
+
+                const instructions = data?.instructions
+
+                console.log('instructions:', instructions)
+
+                printer(
+                    instructions ?? data ?? 'AUTH_FAILURE SIN DATOS',
+                    '⚡⚡ ERROR AUTH ⚡⚡'
+                )
+            },
         },
+
         {
             event: 'message',
             func: (msg: MessageContextIncoming) => {
@@ -163,7 +179,6 @@ class CoreClass<P extends ProviderClass = any, D extends MemoryDB = any> extends
             await this.database.save(ctxByNumber)
         }
 
-        // 📄 Mantener estado de conversacion por numero
         const state = {
             getMyState: this.stateHandler.getMyState(messageCtxInComing.from),
             get: this.stateHandler.get(messageCtxInComing.from),
@@ -171,7 +186,6 @@ class CoreClass<P extends ProviderClass = any, D extends MemoryDB = any> extends
             clear: this.stateHandler.clear(messageCtxInComing.from),
         }
 
-        // 📄 Mantener estado global
         const globalState = {
             get: this.globalStateHandler.get(),
             getAllState: this.globalStateHandler.getAllState,
@@ -181,7 +195,6 @@ class CoreClass<P extends ProviderClass = any, D extends MemoryDB = any> extends
 
         const extensions = this.globalStateHandler.RAW
 
-        // 📄 Crar CTX de mensaje (uso private)
         const createCtxMessage = (
             payload: {
                 body: any
@@ -210,13 +223,11 @@ class CoreClass<P extends ProviderClass = any, D extends MemoryDB = any> extends
             })
         }
 
-        // 📄 Limpiar cola de procesos
         const clearQueue = () => {
             this.queuePrincipal.clearQueue(from)
             return
         }
 
-        // 📄 Finalizar flujo
         const endFlow =
             (flag: FlagsRuntime, inRef: string | number) =>
             async (message = null) => {
@@ -239,7 +250,6 @@ class CoreClass<P extends ProviderClass = any, D extends MemoryDB = any> extends
                 return
             }
 
-        // 📄 Finalizar flujo (patch)
         const endFlowToGotoFlow =
             (flag: FlagsRuntime) =>
             async (messages: TContext[] = []) => {
@@ -262,7 +272,6 @@ class CoreClass<P extends ProviderClass = any, D extends MemoryDB = any> extends
                 return
             }
 
-        // 📄 Esta funcion se encarga de enviar un array de mensajes dentro de este ctx
         const sendFlow = async (messageToSend: any[], numberOrId: string, options: { [key: string]: any } = {}) => {
             options = { prev: prevMsg, forceQueue: false, ...options }
 
@@ -300,25 +309,20 @@ class CoreClass<P extends ProviderClass = any, D extends MemoryDB = any> extends
             }
         }
 
-        // Se han extraído algunas funcionalidades en nuevas funciones para mejorar la legibilidad
         const handleForceQueue = async (_: any, messageToSend: any[], numberOrId: string, from: string) => {
             const listIdsRefCallbacks = messageToSend.map((i: { ref: string }) => i.ref)
             const listProcessWait = this.queuePrincipal.getIdsCallback(from)
 
-            // Registrar/actualizar el conjunto de IDs que están en curso para este "from"
             if (!listProcessWait.length) {
                 this.queuePrincipal.setIdsCallbacks(from, listIdsRefCallbacks)
                 return
             }
 
-            // Si ya hay una lista en proceso, actualizamos la referencia
             this.queuePrincipal.setIdsCallbacks(from, listIdsRefCallbacks)
 
-            // Guardamos el último mensaje como hacía la implementación previa para conservar historial
             const lastMessage = messageToSend[messageToSend.length - 1]
             await this.database.save({ ...lastMessage, from: numberOrId })
 
-            // Evitamos limpiar agresivamente toda la cola; los duplicados se gestionan en la propia cola
             return
         }
 
@@ -378,11 +382,10 @@ class CoreClass<P extends ProviderClass = any, D extends MemoryDB = any> extends
                     return exportFunctionsSend(() => sendFlow(filterNextFlow, from, { prev: undefined }))
                 }
             } catch (error) {
-                // Manejar errores aquí según tu lógica de manejo de errores.
                 console.error('Error en continueFlow:', error)
             }
         }
-        // 📄 [options: fallBack]: esta funcion se encarga de repetir el ultimo mensaje
+
         const fallBack =
             (flag: FlagsRuntime) =>
             async (message = null) => {
@@ -438,9 +441,6 @@ class CoreClass<P extends ProviderClass = any, D extends MemoryDB = any> extends
                 return
             }
 
-        // 📄 [options: flowDynamic]: esta funcion se encarga de responder un array de respuesta esta limitado a 5 mensajes
-        // para evitar bloque de whatsapp
-
         const flowDynamic =
             (
                 flag: FlagsRuntime,
@@ -489,14 +489,13 @@ class CoreClass<P extends ProviderClass = any, D extends MemoryDB = any> extends
                     return createCtxMessage(optParse, index)
                 })
 
-                // Si endFlowFlag existe y no se omite la finalización del flujo, no hacer nada.
                 if (endFlowFlag && !privateOptions?.omitEndFlow) {
                     return
                 }
 
                 for (const msg of parseListMsg) {
                     if (privateOptions?.idleCtx) {
-                        continue // Saltar al siguiente mensaje si se está en modo idleCtx.
+                        continue
                     }
 
                     const delayMs = msg?.options?.delay ?? this.generalArgs.delay ?? 0
@@ -511,7 +510,6 @@ class CoreClass<P extends ProviderClass = any, D extends MemoryDB = any> extends
                 return
             }
 
-        // 📄 Se encarga de revisar si el contexto del mensaje tiene callback o idle
         const resolveCbEveryCtx = async (
             ctxMessage: TContext,
             options = { omitEndFlow: false, idleCtx: false, triggerKey: false }
@@ -531,13 +529,13 @@ class CoreClass<P extends ProviderClass = any, D extends MemoryDB = any> extends
                 const run = await cbEveryCtx(ctxMessage?.ref, { ...options, startIdleMs: ctxMessage?.options?.idle })
                 return run as unknown as TContext
             }
+
             if (!ctxMessage?.options?.capture) {
                 const run = await cbEveryCtx(ctxMessage?.ref, options)
                 return run as unknown as TContext
             }
         }
 
-        // 📄 Se encarga de revisar si el contexto del mensaje tiene callback y ejecutarlo
         const cbEveryCtx = async (
             inRef: string,
             options: { [key: string]: any } = { startIdleMs: 0, omitEndFlow: false, idleCtx: false, triggerKey: false }
@@ -554,7 +552,6 @@ class CoreClass<P extends ProviderClass = any, D extends MemoryDB = any> extends
 
             if (!this.flowClass.allCallbacks[inRef]) return Promise.resolve()
 
-            /** argumentos que se exponen */
             const argsCb = {
                 database,
                 provider,
@@ -581,13 +578,15 @@ class CoreClass<P extends ProviderClass = any, D extends MemoryDB = any> extends
                     }
 
                     await this.flowClass.allCallbacks[inRef](messageCtxInComing, argsCb)
-                    //Si no hay llamado de fallaback y no hay llamado de flowDynamic y no hay llamado de enflow EL flujo continua
+
                     if (continueAfterIdle) {
                         idleForCallback.stop({ from })
                         await continueFlow(overCtx)
                         return
                     }
+
                     const ifContinue = !flags.endFlow && !flags.fallBack && !flags.flowDynamic
+
                     if (ifContinue) {
                         idleForCallback.stop({ from })
                         await continueFlow()
@@ -605,7 +604,11 @@ class CoreClass<P extends ProviderClass = any, D extends MemoryDB = any> extends
                     timeInSeconds: options.startIdleMs / 1000,
                     cb: async (opts: any) => {
                         if (opts.next) {
-                            await runContext(true, { idleFallBack: opts.next, ref: opts.inRef, body: opts.body })
+                            await runContext(true, {
+                                idleFallBack: opts.next,
+                                ref: opts.inRef,
+                                body: opts.body,
+                            })
                         }
                     },
                 })
@@ -618,6 +621,7 @@ class CoreClass<P extends ProviderClass = any, D extends MemoryDB = any> extends
 
         const exportFunctionsSend = async (cb = () => Promise.resolve()) => {
             await cb()
+
             return {
                 createCtxMessage,
                 clearQueue,
@@ -632,18 +636,18 @@ class CoreClass<P extends ProviderClass = any, D extends MemoryDB = any> extends
             }
         }
 
-        // 📄🤘(tiene return) [options: nested(array)]: Si se tiene flujos hijos los implementa
         if (!endFlowFlag && prevMsg?.options?.nested?.length) {
             const nestedRef = prevMsg.options.nested
+
             const flowStandalone = nestedRef.map((f: { refSerialize: string }) => ({
                 ...nestedRef.find((r: { refSerialize: string }) => r.refSerialize === f.refSerialize),
             }))
 
             msgToSend = this.flowClass.find(body, false, flowStandalone) || []
+
             return exportFunctionsSend(() => sendFlow(msgToSend, from))
         }
 
-        // 📄🤘(tiene return) Si el mensaje previo implementa capture
         if (!endFlowFlag && !prevMsg?.options?.nested?.length) {
             const typeCapture = typeof prevMsg?.options?.capture
 
@@ -692,18 +696,19 @@ class CoreClass<P extends ProviderClass = any, D extends MemoryDB = any> extends
         }
 
         await this.stateHandler.updateState({ from })({ __end_flow__: false })
+
         return exportFunctionsSend(() => sendFlow(msgToSend, from, { forceQueue: true }))
     }
 
     /**
      * Enviar mensaje con contexto atraves del proveedor de whatsapp
      * @param {*} numberOrId
-     * @param {*} ctxMessage ver más en GLOSSARY.md
      * @returns
      */
     sendProviderAndSave = async (numberOrId: string, ctxMessage: TContext) => {
         try {
             const { answer } = ctxMessage
+
             if (
                 answer &&
                 answer.length &&
@@ -713,14 +718,20 @@ class CoreClass<P extends ProviderClass = any, D extends MemoryDB = any> extends
             ) {
                 if (answer !== '__capture_only_intended__') {
                     const respMessage = await this.provider.sendMessage(numberOrId, answer, ctxMessage)
+
                     this.emit('send_message', {
                         ...ctxMessage,
                         from: numberOrId,
                         answer: answer,
                         respMessage: respMessage,
-                    } as TContext & { from: string; answer: string | string[]; respMessage: any })
+                    } as TContext & {
+                        from: string
+                        answer: string | string[]
+                        respMessage: any
+                    })
                 }
             }
+
             await this.database.save({ ...ctxMessage, from: numberOrId })
 
             return Promise.resolve()
@@ -741,13 +752,14 @@ class CoreClass<P extends ProviderClass = any, D extends MemoryDB = any> extends
         for (const ctxMessage of messageToSend) {
             const delayMs = ctxMessage?.options?.delay ?? this.generalArgs.delay ?? 0
             await delay(delayMs)
+
             await this.queuePrincipal.enqueue(
                 numberOrId,
                 () => this.sendProviderAndSave(numberOrId, ctxMessage),
                 ctxMessage.ref
             )
-            // await queuePromises.dequeue()
         }
+
         return Promise.resolve
     }
 
@@ -757,20 +769,29 @@ class CoreClass<P extends ProviderClass = any, D extends MemoryDB = any> extends
     httpServer = (port: number) => {
         this.provider.initAll(port, {
             blacklist: this.dynamicBlacklist,
+
             state: (number: string): BotStateStandAlone => ({
                 getMyState: this.stateHandler.getMyState(number),
                 get: this.stateHandler.get(number),
                 update: this.stateHandler.updateState({ from: number }),
                 clear: this.stateHandler.clear(number),
             }),
-            emit: (eventName: 'send_message' | 'notice', args: Record<string, any> & { from: string }) => {
+
+            emit: (
+                eventName: 'send_message' | 'notice',
+                args: Record<string, any> & { from: string }
+            ) => {
                 if (eventName === 'send_message') {
                     this.emit('send_message', {
                         ...args,
                         from: args.from,
                         answer: args.answer || '',
                         respMessage: args.respMessage || null,
-                    } as TContext & { from: string; answer: string | string[]; respMessage: any })
+                    } as TContext & {
+                        from: string
+                        answer: string | string[]
+                        respMessage: any
+                    })
                 } else if (eventName === 'notice') {
                     this.emit('notice', {
                         title: args.title || '',
@@ -778,12 +799,14 @@ class CoreClass<P extends ProviderClass = any, D extends MemoryDB = any> extends
                     })
                 }
             },
+
             globalState: (): BotStateGlobal => ({
                 get: this.globalStateHandler.get(),
                 getAllState: this.globalStateHandler.getAllState,
                 update: this.globalStateHandler.updateState(),
                 clear: this.globalStateHandler.clear(),
             }),
+
             ctxMethods: this.buildCtxMethods(),
         })
     }
@@ -795,7 +818,10 @@ class CoreClass<P extends ProviderClass = any, D extends MemoryDB = any> extends
     private buildCtxMethods = (): BotCtxMethods => ({
         endFlow: async (from: string) => {
             this.queuePrincipal.clearQueue(from)
-            this.stateHandler.updateState({ from })({ __end_flow__: true })
+
+            this.stateHandler.updateState({ from })({
+                __end_flow__: true,
+            })
         },
     })
 
@@ -814,7 +840,10 @@ class CoreClass<P extends ProviderClass = any, D extends MemoryDB = any> extends
                       state: (number: string) => BotStateStandAlone
                       globalState: () => BotStateGlobal
                       ctxMethods: BotCtxMethods
-                      emit: (eventName: string, args: Record<string, any> & { from: string }) => void
+                      emit: (
+                          eventName: string,
+                          args: Record<string, any> & { from: string }
+                      ) => void
                   })
                 | undefined,
             req: any,
@@ -822,4 +851,5 @@ class CoreClass<P extends ProviderClass = any, D extends MemoryDB = any> extends
         ) => Promise<void>
     ) => this.provider.inHandleCtx(ctxPolka)
 }
+
 export { CoreClass }
