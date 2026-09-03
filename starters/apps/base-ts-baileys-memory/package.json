@@ -12,9 +12,9 @@
   },
   "keywords": [],
  "dependencies": {
-    "@builderbot/bot": "1.3.10",
+    "@builderbot/bot": "workspace:*",
     "@builderbot/database-json": "1.3.10",
-    "@builderbot/provider-baileys": "1.3.10"
+    "@builderbot/provider-baileys": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^25.0.0",
