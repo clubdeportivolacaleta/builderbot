@@ -20,7 +20,7 @@ const discordFlow = addKeyword<Provider, Database>('doc').addAnswer(
 )
 
 const welcomeFlow = addKeyword<Provider, Database>(['hi', 'hello', 'hola'])
-    .addAnswer(`🙌 Hello welcome to this *Chatbot*`)
+    .addAnswer('🙌 Hello welcome to this *Chatbot*')
     .addAnswer(
         [
             'I share with you the following links of interest about the project',
@@ -37,7 +37,7 @@ const welcomeFlow = addKeyword<Provider, Database>(['hi', 'hello', 'hola'])
     )
 
 const registerFlow = addKeyword<Provider, Database>(utils.setEvent('REGISTER_FLOW'))
-    .addAnswer(`What is your name?`, { capture: true }, async (ctx, { state }) => {
+    .addAnswer('What is your name?', { capture: true }, async (ctx, { state }) => {
         await state.update({ name: ctx.body })
     })
     .addAnswer('What is your age?', { capture: true }, async (ctx, { state }) => {
@@ -48,28 +48,29 @@ const registerFlow = addKeyword<Provider, Database>(utils.setEvent('REGISTER_FLO
     })
 
 const fullSamplesFlow = addKeyword<Provider, Database>(['samples', utils.setEvent('SAMPLES')])
-    .addAnswer(`💪 I'll send you a lot files...`)
-    .addAnswer(`Send image from Local`, { media: join(process.cwd(), 'assets', 'sample.png') })
-    .addAnswer(`Send video from URL`, {
+    .addAnswer("💪 I'll send you a lot files...")
+    .addAnswer('Send image from Local', { media: join(process.cwd(), 'assets', 'sample.png') })
+    .addAnswer('Send video from URL', {
         media: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYTJ0ZGdjd2syeXAwMjQ4aWdkcW04OWlqcXI3Ynh1ODkwZ25zZWZ1dCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/LCohAb657pSdHv0Q5h/giphy.mp4',
     })
-    .addAnswer(`Send audio from URL`, { media: 'https://cdn.freesound.org/previews/728/728142_11861866-lq.mp3' })
-    .addAnswer(`Send file from URL`, {
+    .addAnswer('Send audio from URL', { media: 'https://cdn.freesound.org/previews/728/728142_11861866-lq.mp3' })
+    .addAnswer('Send file from URL', {
         media: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
     })
 
 const main = async () => {
     const adapterFlow = createFlow([welcomeFlow, registerFlow, fullSamplesFlow])
     
-    // If you experience ERRO AUTH issues, check the latest WhatsApp version at:
-    // https://wppconnect.io/whatsapp-versions/
-    // Example: version "2.3000.1035824857-alpha" -> [2, 3000, 1035824857]
-   const adapterProvider = createProvider(Provider)
+    // AQUÍ: Pasamos el puerto dinámico de Render al proveedor
+    const adapterProvider = createProvider(Provider, {
+        port: Number(PORT),
+    })
+    
     const adapterDB = new Database()
 
     const { handleCtx, httpServer } = await createBot({
         flow: adapterFlow,
-       provider: adapterProvider as any,
+        provider: adapterProvider,
         database: adapterDB,
     })
 
@@ -121,7 +122,8 @@ const main = async () => {
         })
     )
 
-    httpServer(+PORT)
+    // AQUÍ: Aseguramos el puerto del core server
+    httpServer(Number(PORT))
 }
 
 main()
