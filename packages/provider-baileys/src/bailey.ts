@@ -1214,7 +1214,7 @@ class BaileysProvider extends ProviderClass<WASocket> {
         return reconnectableCodes.includes(statusCode) && this.reconnectAttempts < this.maxReconnectAttempts
     }
 
-    private async delayedReconnect(): Promise<void> {
+   private async delayedReconnect(): Promise<void> {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
         this.logger.log(
             `[${new Date().toISOString()}] Max reconnection attempts reached (${this.maxReconnectAttempts})`
@@ -1228,34 +1228,39 @@ class BaileysProvider extends ProviderClass<WASocket> {
                 `Need help: https://link.codigoencasa.com/DISCORD`,
             ],
         })
+
         return
     }
 
     this.reconnectAttempts++
-        const delay = Math.min(this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1), 30000) // Max 30 segundos
 
-        this.logger.log(
-            `[${new Date().toISOString()}] Reconnection attempt ${this.reconnectAttempts}/${
-                this.maxReconnectAttempts
-            } in ${delay}ms`
-        )
+    const delay = Math.min(
+        this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1),
+        30000
+    )
 
-        setTimeout(async () => {
-            try {
-                // Cerrar el socket anterior para evitar conflictos de conexión (xml-not-well-formed)
-                if (this.vendor) {
-                    try {
-                        this.vendor.ws?.close()
-                        this.vendor.end(new Error('Reconnecting'))
-                    } catch (e) {
-                        this.logger.log(`[${new Date().toISOString()}] Error closing previous socket:`, e)
-                    }
+    this.logger.log(
+        `[${new Date().toISOString()}] Reconnection attempt ${this.reconnectAttempts}/${
+            this.maxReconnectAttempts
+        } in ${delay}ms`
+    )
+
+    setTimeout(async () => {
+        try {
+            if (this.vendor) {
+                try {
+                    this.vendor.ws?.close()
+                    this.vendor.end(new Error('Reconnecting'))
+                } catch (e) {
+                    this.logger.log(`[${new Date().toISOString()}] Error closing previous socket:`, e)
                 }
-                this.initVendor().then((v) => this.listenOnEvents(v))
-            } catch (error) {
-                this.logger.log(`[${new Date().toISOString()}] Reconnection failed:`, error)
             }
-        }, delay)
-    }
+
+            this.initVendor().then((v) => this.listenOnEvents(v))
+        } catch (error) {
+            this.logger.log(`[${new Date().toISOString()}] Reconnection failed:`, error)
+        }
+    }, delay)
+}
 
 export { BaileysProvider }
