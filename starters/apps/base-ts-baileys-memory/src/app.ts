@@ -3,7 +3,7 @@ import { createBot, createProvider, createFlow, addKeyword, utils } from '@build
 import { MemoryDB as Database } from '@builderbot/bot'
 import { BaileysProvider as Provider } from '@builderbot/provider-baileys'
 
-const PORT = process.env.PORT ?? 3008
+const PORT = Number(process.env.PORT ?? 3008)
 
 const discordFlow = addKeyword<Provider, Database>('doc').addAnswer(
     ['You can see the documentation here', '📄 https://builderbot.app/docs \n', 'Do you want to continue? *yes*'].join(
@@ -53,23 +53,29 @@ const fullSamplesFlow = addKeyword<Provider, Database>(['samples', utils.setEven
     .addAnswer(`Send video from URL`, {
         media: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYTJ0ZGdjd2syeXAwMjQ4aWdkcW04OWlqcXI3Ynh1ODkwZ25zZWZ1dCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/LCohAb657pSdHv0Q5h/giphy.mp4',
     })
-    .addAnswer(`Send audio from URL`, { media: 'https://cdn.freesound.org/previews/728/728142_11861866-lq.mp3' })
+    .addAnswer(`Send audio from URL`, {
+        media: 'https://cdn.freesound.org/previews/728/728142_11861866-lq.mp3',
+    })
     .addAnswer(`Send file from URL`, {
         media: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
     })
 
 const main = async () => {
     const adapterFlow = createFlow([welcomeFlow, registerFlow, fullSamplesFlow])
-    
+
     // If you experience ERRO AUTH issues, check the latest WhatsApp version at:
     // https://wppconnect.io/whatsapp-versions/
     // Example: version "2.3000.1035824857-alpha" -> [2, 3000, 1035824857]
-   const adapterProvider = createProvider(Provider)
+
+    const adapterProvider = createProvider(Provider, {
+        port: PORT,
+    })
+
     const adapterDB = new Database()
 
     const { handleCtx, httpServer } = await createBot({
         flow: adapterFlow,
-       provider: adapterProvider as any,
+        provider: adapterProvider as any,
         database: adapterDB,
     })
 
@@ -104,11 +110,19 @@ const main = async () => {
         '/v1/blacklist',
         handleCtx(async (bot, req, res) => {
             const { number, intent } = req.body
+
             if (intent === 'remove') bot.blacklist.remove(number)
             if (intent === 'add') bot.blacklist.add(number)
 
             res.writeHead(200, { 'Content-Type': 'application/json' })
-            return res.end(JSON.stringify({ status: 'ok', number, intent }))
+
+            return res.end(
+                JSON.stringify({
+                    status: 'ok',
+                    number,
+                    intent,
+                })
+            )
         })
     )
 
@@ -116,12 +130,19 @@ const main = async () => {
         '/v1/blacklist/list',
         handleCtx(async (bot, req, res) => {
             const blacklist = bot.blacklist.getList()
+
             res.writeHead(200, { 'Content-Type': 'application/json' })
-            return res.end(JSON.stringify({ status: 'ok', blacklist }))
+
+            return res.end(
+                JSON.stringify({
+                    status: 'ok',
+                    blacklist,
+                })
+            )
         })
     )
 
-    httpServer(+PORT)
+    httpServer(PORT)
 }
 
 main()
