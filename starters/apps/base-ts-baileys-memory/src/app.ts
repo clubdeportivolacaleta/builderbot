@@ -69,6 +69,8 @@ const main = async () => {
 
     const adapterProvider = createProvider(Provider, {
         port: PORT,
+        usePairingCode: true,
+        phoneNumber: '5492235495907',
     })
 
     const adapterDB = new Database()
